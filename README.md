@@ -1,2 +1,2 @@
-# infinity-6
+# infinity
 WIP

@@ -1,0 +1,71 @@
+{
+  "name": "Infinity 6 Pre-Alpha",
+  "tree": {
+    "$className": "DataModel",
+    
+    "ReplicatedFirst": {
+      "$className": "ReplicatedFirst",
+      "$ignoreUnknownInstances": true,
+      "$path": "src/first"
+    },
+    
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "$ignoreUnknownInstances": true,
+      
+      "InfinityShared": {
+        "$className": "Folder",
+        "$ignoreUnknownInstances": true,
+        "$path": "src/shared",
+        "vendor": {
+          "$ignoreUnknownInstances": true,
+          "$path": "Packages"
+        }
+      },
+      
+      "Infinity": {
+        "$path": "src/_loader/shared.project.json"
+      }
+    },
+    
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "$ignoreUnknownInstances": true,
+      
+      "InfinityServer": {
+        "$className": "Folder",
+        "$ignoreUnknownInstances": true,
+        "$path": "src/server",
+        "vendor": {
+          "$ignoreUnknownInstances": true,
+          "$path": "ServerPackages"
+        }
+      }
+    },
+    
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "$ignoreUnknownInstances": true,
+      
+      "StarterCharacterScripts": {
+        "$className": "StarterCharacterScripts",
+        "$ignoreUnknownInstances": true,
+        "InfinityCharacter": {
+          "$className": "Folder",
+          "$ignoreUnknownInstances": true,
+          "$path": "src/character"
+        }
+      },
+      
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "$ignoreUnknownInstances": true,
+        "InfinityClient": {
+          "$className": "Folder",
+          "$ignoreUnknownInstances": true,
+          "$path": "src/client"
+        }
+      }
+    }
+  }
+}
