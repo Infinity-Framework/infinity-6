@@ -17,8 +17,9 @@ local playerService     = game:GetService('Players')
 local serverService     = game:GetService('ServerScriptService')
 
 --= Constants =--
-local LOADER_VER        = '6.0.0alpha'
+local VERBOSE_OUTPUT    = true
 local FETCH_TIMEOUT     = 0.25
+local LOADER_VER        = '6.0.0 beta'
 local ERROR_TEMPLATE    = ('$REP\n  [InfinityLoader] %s\n  $REP'):gsub('%$REP', string.rep('-', 40))
 local PREFIX_PATHS      = {
     ['%$'] = game.ReplicatedStorage:WaitForChild('InfinityShared')
@@ -27,14 +28,20 @@ local MESSAGES          = {
     REQUIRE_ERROR = 'Failed to require %q - the target module errored. See above for error details.',
     PATH_NODE_NOT_FOUND = 'Failed to require path %q - node %q not found.',
     PATH_NOT_A_MODULE = 'Failed to require path %q - final node %q is not a ModuleScript.',
-    NOPATH_NOT_A_MODULE = 'Failed to no-path require %q - %q is not a ModuleScript.',
-    NOPATH_NOT_FOUND = 'Failed to no-path require %q - no module with that name found in the specified context.'
+    NOPATH_NOT_A_MODULE = 'Failed to deep-fetch require %q - %q is not a ModuleScript.',
+    NOPATH_NOT_FOUND = 'Failed to deep-fetch require %q - no module with that name found in the specified context.'
 }
 
 --= Variables =--
 local moduleCache       = { }
 
 --= Functions =--
+local function _out(template: string, ...: any)
+    if VERBOSE_OUTPUT then
+        print('[InfinityLoader]', template:format(...))
+    end
+end
+
 local function _warn(template: string, ...: any)
     warn(ERROR_TEMPLATE:format(template:format(...)))
 end
@@ -88,12 +95,15 @@ local function _fetchDescendantTimeout(root: Instance, query: string): Instance|
     
     if not result then
         local startTime = tick()
+        local searchTime = 0
         
         while not result do
             result = _getDescendant(root, query)
             if result or (tick() - startTime >= FETCH_TIMEOUT) then break end
-            task.wait()
+            searchTime = task.wait()
         end
+        
+        _out('Took %d seconds to find %q', searchTime, query)
     end
     
     return result
@@ -117,10 +127,13 @@ local function _promiseRequire(targetModule: ModuleScript): any
     return result
 end
 
+_out('You are using Infinity Module Loader %s', LOADER_VER)
+
 --= Main Loader Function =--
 return function (query: string|ModuleScript): any
     if type(query) == 'string' then
         if moduleCache[query] ~= nil then
+            _out('Returning cached result for query %q', query)
             return moduleCache[query]
         end
         
@@ -134,8 +147,12 @@ return function (query: string|ModuleScript): any
         end
         
         if #nodes > 1 then
+            _out('Attempting path require for %q (nodes: %d, context: %s)', query, #nodes, root.Name)
+            
             for index = 1, #nodes do
                 local node = nodes[index]
+                
+                _out('Stepping path node %q', node)
                 
                 if not targetModule then
                     targetModule = root:WaitForChild(node, FETCH_TIMEOUT)
@@ -150,15 +167,19 @@ return function (query: string|ModuleScript): any
             end
             
             if targetModule:IsA('ModuleScript') then
+                _out('Found %q. Requiring...', query)
                 result = _promiseRequire(targetModule)
             else
                 _warn(MESSAGES.PATH_NOT_A_MODULE, query, nodes[#nodes])
             end
         else
+            _out('Attempting deep-fetch require for %q (context: %s)', query, root.Name)
+            
             targetModule = _fetchDescendantTimeout(root, nodes[1])
             
             if targetModule then
                 if targetModule:IsA('ModuleScript') then
+                    _out('Done.', query)
                     result = _promiseRequire(targetModule)
                 else
                     _warn(MESSAGES.NOPATH_NOT_A_MODULE, query, nodes[#nodes])

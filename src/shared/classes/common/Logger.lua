@@ -84,7 +84,7 @@ export type Logger      = {
 }
 
 --= Modules & Config =--
-local classify          = require('$lib/Classify')
+local classify          = require('$Classify')
 
 --= Class API =--
 function Logger:Print(message: string, ...): nil
@@ -98,11 +98,7 @@ function Logger:Print(message: string, ...): nil
         final_str = message
     end
     
-    if #{...} > 0 then
-        for _, data in pairs({...}) do
-            final_str = final_str:format(data)
-        end
-    end
+    final_str = final_str:format(...)
     
     print(final_str)
 end
@@ -118,11 +114,7 @@ function Logger:Warn(message: string, ...): nil
         final_str = message
     end
     
-    if #{...} > 0 then
-        for _, data in pairs({...}) do
-            final_str = final_str:format(data)
-        end
-    end
+    final_str = final_str:format(...)
     
     warn(final_str)
 end
@@ -138,11 +130,7 @@ function Logger:Error(message: string, ...): nil
         final_str = message
     end
     
-    if #{...} > 0 then
-        for _, data in pairs({...}) do
-            final_str = final_str:format(data)
-        end
-    end
+    final_str = final_str:format(...)
     
     error(final_str, 2)
 end

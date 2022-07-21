@@ -73,6 +73,10 @@ function Animator3:Tween(args: table)
     tween.Completed:Connect(function()
         complete = true
         tween:Destroy()
+        
+        if args.Callback then
+            args.Callback()
+        end
     end)
     
     tween:Play()
