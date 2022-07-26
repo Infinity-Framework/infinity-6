@@ -4,7 +4,10 @@
     Created: 07/20/2022 @ 14:00:59
     
     Description:
-        No description provided.
+        Provides a set of promisified methods to wait for data budgets and rate limits.
+        
+        Be sure to add "---@module DataRateHelper" after you require this module if
+        you want access to inline documentation.
     
     Documentation:
         No documentation provided.
@@ -35,7 +38,7 @@ local READ_TYPES            = { 'GetAsync', 'GetSortedAsync' }
 
 --= Variables =--
 local rateCache             = { }
-local queue                 = { }
+local yieldQueue            = { }
 
 --= Internal Functions =--
 local function _hasRequestBudget(requestType: Enum.DataStoreRequestType): boolean
@@ -52,14 +55,14 @@ end
 ---@meta
 function DataRateHelper:ResolveWhenReady(datastore: DataStore, requestType: Enum.DataStoreRequestType, key: string): Promise
     local queueData = {
-        OID = #queue + 1,
+        OID = #yieldQueue + 1,
         DataStore = datastore,
         RequestType = requestType,
         Key = key,
         Event = Instance.new('BindableEvent')
     }
     
-    table.insert(queue, queueData)
+    table.insert(yieldQueue, queueData)
     
     return Promise.new(function(resolve: () -> ())
         local finishEvent = queueData.Event
@@ -79,14 +82,14 @@ end
 ---@meta
 function DataRateHelper:WaitUntilReady(datastore: DataStore, requestType: Enum.DataStoreRequestType, key: string)
     local queueData = {
-        OID = #queue + 1,
+        OID = #yieldQueue + 1,
         DataStore = datastore,
         RequestType = requestType,
         Key = key,
         Event = Instance.new('BindableEvent')
     }
     
-    table.insert(queue, queueData)
+    table.insert(yieldQueue, queueData)
     
     queueData.Event.Event:Wait()
     queueData.Event:Destroy()
@@ -101,35 +104,36 @@ function DataRateHelper:Tick() ---@deprecated
         end
     end
     
-    for index, queueItem in queue do
+    for index, queueItem in yieldQueue do
         local targetStore = queueItem.DataStore
-        local targetKey = queueItem.Key
         local requestType = queueItem.RequestType
         local event = queueItem.Event
-        local cacheKey = targetStore.Name .. requestType.Name .. targetKey
+        local cacheKey = targetStore.Name .. requestType.Name .. queueItem.Key
         
         if not rateCache[cacheKey] then
             rateCache[cacheKey] = 0
         end
         
-        if table.find(READ_TYPES, requestType.Name) and _hasRequestBudget(requestType) then
-            local numPlayers = #playerService:GetPlayers()
-            local trueDelay = 60 / (60 + (numPlayers * 10))
-            
-            if (tick() - rateCache[cacheKey]) >= trueDelay then
-                rateCache[cacheKey] = tick()
-                event:Fire()
-                console:Print('Read-wait success (OID: %d, remaining queue: %d)', queueItem.OID, #queue - 1)
-                table.remove(queue, index)
-                break
-            end
-        elseif table.find(WRITE_TYPES, requestType.Name) and _hasRequestBudget(requestType) then
-            if (tick() - rateCache[cacheKey]) >= SAME_KEY_DELAY_WRITE then
-                rateCache[cacheKey] = tick()
-                event:Fire()
-                console:Print('Write-wait success (OID: %d, remaining queue: %d)', queueItem.OID, #queue - 1)
-                table.remove(queue, index)
-                break
+        if _hasRequestBudget(requestType) then
+            if table.find(READ_TYPES, requestType.Name) then
+                local numPlayers = #playerService:GetPlayers()
+                local trueDelay = 60 / (60 + (numPlayers * 10))
+                
+                if (tick() - rateCache[cacheKey]) >= trueDelay then
+                    rateCache[cacheKey] = tick()
+                    event:Fire()
+                    console:Print('Read-wait success (OID: %d, remaining queue: %d)', queueItem.OID, #yieldQueue - 1)
+                    table.remove(yieldQueue, index)
+                    break
+                end
+            elseif table.find(WRITE_TYPES, requestType.Name) then
+                if (tick() - rateCache[cacheKey]) >= SAME_KEY_DELAY_WRITE then
+                    rateCache[cacheKey] = tick()
+                    event:Fire()
+                    console:Print('Write-wait success (OID: %d, remaining queue: %d)', queueItem.OID, #yieldQueue - 1)
+                    table.remove(yieldQueue, index)
+                    break
+                end
             end
         end
     end
