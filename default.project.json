@@ -17,14 +17,18 @@
         "$className": "Folder",
         "$ignoreUnknownInstances": true,
         "$path": "src/shared",
-        "vendor": {
+        "packages": {
           "$ignoreUnknownInstances": true,
           "$path": "Packages"
         }
       },
       
+      "InfinityExecutor": {
+        "$path": "src/_executor"
+      },
+      
       "Infinity": {
-        "$path": "src/_loader/shared.project.json"
+        "$path": "src/_loader/"
       }
     },
     
@@ -36,7 +40,7 @@
         "$className": "Folder",
         "$ignoreUnknownInstances": true,
         "$path": "src/server",
-        "vendor": {
+        "packages": {
           "$ignoreUnknownInstances": true,
           "$path": "ServerPackages"
         }
