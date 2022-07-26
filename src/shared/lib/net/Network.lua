@@ -42,7 +42,7 @@ local Network = {}
 Network.__classname = "NetworkNew"
 
 --= Modules & Config =--
-local Promise = require("$lib/Promise")
+local Promise = require("$Promise")
 
 --= Roblox Services =--
 local RunService = game:GetService("RunService")
