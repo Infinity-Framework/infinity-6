@@ -103,11 +103,6 @@ end
 
 --= Job Initializers =--
 function Replicator:Init()
-    if EVENT_UUID == '' or self.FLAGS.IS_STUDIO then
-        EVENT_UUID = 'REPLICATOR_STUDIO'
-        warn('[ReplicatorServer] ' .. MESSAGES.STUDIO_MODE)
-    end
-    
     main_event = Instance.new('RemoteEvent')
     main_event.Name = EVENT_UUID
     main_event.Parent = rep_svc
@@ -123,6 +118,12 @@ function Replicator:Init()
             warn(format('NO_LISTENER', key, client.name))
         end
     end)
+end
+
+function Replicator:Immediate()
+    if EVENT_UUID == '' or self.FLAGS.IS_STUDIO then
+        EVENT_UUID = 'REPLICATOR_STUDIO'
+    end
 end
 
 --= Return Job =--
