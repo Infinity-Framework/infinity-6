@@ -96,17 +96,17 @@ export type SawSpring   = {
     Clock: () -> number,
     Damper: number,
     EPSILON: number,
-    Impulse: (number) -> (),
-    Map: (number, number) -> number,
-    MapInverse: (number, number) -> number,
+    Impulse: (velocity: number) -> (),
+    Map: (self: {}, min: number, max: number) -> number,
+    MapInverse: (self: {}, min: number, max: number) -> number,
     Position: number,
-    Read: () -> (boolean, number),
-    Skip: (number) -> (),
+    Read: (self: {}) -> (boolean, number),
+    Skip: (self: {}, delta: number) -> (),
     Speed: number,
     Sprung: boolean,
     Target: number,
     TargetReached: RBXScriptSignal,
-    Update: () -> (),
+    Update: (self: {}) -> (),
     Updated: RBXScriptSignal,
     Updating: boolean,
     Velocity: number
@@ -123,7 +123,7 @@ local EULER             = 2.7182818284590452353602874713527
 
 --= Functions =--
 local function _map(input: number, min: number, max: number): number
-    return (((input - 0)*(max - min)) / (1 - 0)) + min
+    return (((input - 0) * (max - min)) / (1 - 0)) + min
 end
 
 --= Class Internal =--
@@ -134,7 +134,7 @@ function SawSpring:_posVelocity(now: number): (number, number)
     local damper = self._damper
     local speed = self._speed
     
-    local t = speed*(now - self._time0)
+    local t = speed * (now - self._time0)
     local damperSquared = damper * damper
      
     local h, sin, cosine
