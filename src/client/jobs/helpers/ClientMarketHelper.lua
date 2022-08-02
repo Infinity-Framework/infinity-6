@@ -4,10 +4,7 @@
     Created: 07/22/2022 @ 14:31:55
     
     Description:
-        Handles client-sided networking for waiting on cached marketplace data.
-        
-        Be sure to add "---@module ClientMarketHelper" after you require this module if
-        you want access to inline documentation.
+        No description provided.
     
     Documentation:
         No documentation provided.
@@ -32,7 +29,7 @@ local repStorage            = game:GetService('ReplicatedStorage')
 local assetFolder           = repStorage:FindFirstChild('_KLOSS_TEMP')
 
 --= Constants =--
-local INVOKE_DELAY          = 0.05
+local INVOKE_DELAY          = 0.15
 local DEFAULT_TIMEOUT       = 99999
 
 --= Job API =--
@@ -49,7 +46,7 @@ local DEFAULT_TIMEOUT       = 99999
 ---@param timeout? number Optional timeout. **[default=99999]**
 ---@meta
 function ClientMarketHelper:WaitForProductDataAsync(productId: number, timeout: number?): Promise
-    return Promise.new(function(resolve: (productData: {}) -> (), reject: () -> ())
+    return Promise.new(function(resolve: (productData: {}) -> ())
         local startTime = tick()
         local result
         
@@ -69,7 +66,8 @@ end
 ---with the returned data, even if it is `nil` (not cached yet).
 ---
 ---If product data isn't yet cached, MarketHelper will add the product to the cache queue.
----Note that this does _not_ guarantee that the product data will be available before the timeout.
+---Note that this does _not_ guarantee that the product data will be available before the promise
+---resolves.
 ---@param productId number The product ID you're querying.
 ---@meta
 function ClientMarketHelper:GetProductDataAsync(productId: number): Promise
