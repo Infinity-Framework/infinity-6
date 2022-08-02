@@ -4,11 +4,7 @@
     Created: 07/18/2022 @ 14:47:33
     
     Description:
-        Provides a set of promisified MarketplaceService wrappers for commonly-used
-        and frequently failing methods.
-        
-        Be sure to add "---@module MarketHelper" after you require this module if
-        you want access to inline documentation.
+        No description provided.
     
     Documentation:
         No documentation provided.
@@ -32,17 +28,20 @@ local insertService         = game:GetService('InsertService')
 
 --= Object References =--
 local console               = Logger.new('MarketHelper')
-local assetFolder           = repStorage:FindFirstChild('_KLOSS_TEMP')
+local assetFolder           = repStorage:FindFirstChild('MarketAssets')
 
 --= Constants =--
 local VERBOSE_OUTPUT        = true
-local DEFAULT_DELAY         = 1.5
-local DEFAULT_RETRIES       = 2
+local DEFAULT_DELAY         = 2
+local BUDGET_REFILL_DELAY   = 1.51
+local DEFAULT_RETRIES       = 5
 local MAX_CACHE_ATTEMPTS    = 2
 local FETCH_BUDGET          = 40
+local MAX_CACHE_AMOUNT      = 5000
 
 --= Variables =--
 local productCache          = { }
+local cacheHistory          = { }
 local cacheQueue            = { }
 local currentBudget         = FETCH_BUDGET
 
@@ -66,6 +65,17 @@ local function _isInCacheOrQueue(productId: number): boolean
     end
     
     return false
+end
+
+local function _verifyCache()
+    if #cacheHistory >= MAX_CACHE_AMOUNT then
+        local oldestEntry = cacheHistory[1]
+        
+        if oldestEntry then
+            productCache[oldestEntry] = nil
+            table.remove(cacheHistory, 1)
+        end
+    end
 end
 
 --= Job API =--
@@ -143,8 +153,9 @@ function MarketHelper:Update() ---@deprecated
         end):expect()
         
         if productInfo then
-            console:Print('Cached product %d (remaining queue: %d, remaining budget: %d)', productId, #cacheQueue - 1, currentBudget - 1)
+            console:Print('Cached product %d (queue: %d, budget: %d, cached: %d)', productId, #cacheQueue - 1, currentBudget - 1, #cacheHistory + 1)
             productCache[productId] = productInfo
+            table.insert(cacheHistory, productId)
             table.remove(cacheQueue, 1)
             currentBudget -= 1
             
@@ -170,6 +181,8 @@ function MarketHelper:Update() ---@deprecated
         else
             first[3] += 1
         end
+        
+        _verifyCache()
     end
 end
 
@@ -186,7 +199,7 @@ function MarketHelper:Run() ---@deprecated
         return productCache[itemId]
     end)
     
-    while task.wait(DEFAULT_DELAY) do
+    while task.wait(BUDGET_REFILL_DELAY) do
         currentBudget += 1
         
         if currentBudget > FETCH_BUDGET then
@@ -203,7 +216,7 @@ function MarketHelper:Init() ---@deprecated
     
     if not assetFolder then
         assetFolder = Instance.new('Folder', repStorage)
-        assetFolder.Name = '_KLOSS_TEMP'
+        assetFolder.Name = 'MarketAssets'
     end
 end
 
