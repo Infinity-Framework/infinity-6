@@ -26,7 +26,7 @@ local network               = require('$Network')
 local repStorage            = game:GetService('ReplicatedStorage')
 
 --= Object References =--
-local assetFolder           = repStorage:FindFirstChild('_KLOSS_TEMP')
+local assetFolder           = repStorage:FindFirstChild('MarketAssets')
 
 --= Constants =--
 local INVOKE_DELAY          = 0.15
@@ -43,7 +43,7 @@ local DEFAULT_TIMEOUT       = 99999
 ---If product data isn't yet cached, MarketHelper will add the product to the cache queue.
 ---Note that this does _not_ guarantee that the product data will be available before the timeout.
 ---@param productId number The product ID you're querying.
----@param timeout? number Optional timeout. **[default=99999]**
+---@param timeout number? Optional timeout. **[default=99999]**
 ---@meta
 function ClientMarketHelper:WaitForProductDataAsync(productId: number, timeout: number?): Promise
     return Promise.new(function(resolve: (productData: {}) -> ())
@@ -51,7 +51,7 @@ function ClientMarketHelper:WaitForProductDataAsync(productId: number, timeout: 
         local result
         
         while not result and ((tick() - startTime) < (timeout or DEFAULT_TIMEOUT)) do
-            result = network:Invoke('MarketHelper:get_product_info', productId)
+            result = network:Invoke('MarketHelper:GetProductInfo', productId)
             
             if result then break end
             
@@ -72,7 +72,7 @@ end
 ---@meta
 function ClientMarketHelper:GetProductDataAsync(productId: number): Promise
     return Promise.new(function(resolve: (productData: {}) -> ())
-        resolve(network:Invoke('MarketHelper:get_product_info', productId))
+        resolve(network:Invoke('MarketHelper:GetProductInfo', productId))
     end)
 end
 
@@ -83,11 +83,11 @@ end
 ---If an optional `timeout` is specified and is exceeded, this function will resolve
 ---with `nil` as the result.
 ---@param productId number The product ID you're querying.
----@param timeout? number Optional timeout. **[default=99999]**
+---@param timeout number? Optional timeout. **[default=99999]**
 ---@meta
 function ClientMarketHelper:WaitForAssetReadyAsync(productId: number, timeout: number?): Promise
     return Promise.new(function(resolve: (asset: Instance|nil) -> ())
-        local result = assetFolder:WaitForChild('KK_UGC_' .. productId, timeout or 99999)
+        local result = assetFolder:WaitForChild('MarketAsset_' .. productId, timeout or 99999)
         resolve(result)
     end)
 end

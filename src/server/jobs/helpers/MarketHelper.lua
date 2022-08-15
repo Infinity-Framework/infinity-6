@@ -119,7 +119,7 @@ end
 ---@param itemId number The ID of the product.
 ---@meta
 function MarketHelper:GetProductAssetModel(itemId: number): Instance|nil
-    local result = assetFolder:FindFirstChild('KK_UGC_' .. itemId)
+    local result = assetFolder:FindFirstChild('MarketAsset_' .. itemId)
     
     if result then
         return result:Clone()
@@ -187,11 +187,11 @@ function MarketHelper:Update() ---@deprecated
 end
 
 function MarketHelper:Run() ---@deprecated
-    Network:Fired('MarketHelper:request_cache', function(_, itemId: number)
+    Network:Fired('MarketHelper:RequestCache', function(_, itemId: number)
         MarketHelper:CacheProductInfo(itemId)
     end)
     
-    Network:Invoked('MarketHelper:get_product_info', function(_, itemId: number)
+    Network:Invoked('MarketHelper:GetProductInfo', function(_, itemId: number)
         if not _isInCacheOrQueue(itemId) then
             MarketHelper:CacheProductInfo(itemId)
         end
@@ -209,8 +209,8 @@ function MarketHelper:Run() ---@deprecated
 end
 
 function MarketHelper:Init() ---@deprecated
-    Network:RegisterEvent('MarketHelper:request_cache')
-    Network:RegisterFunction('MarketHelper:get_product_info')
+    Network:RegisterEvent('MarketHelper:RequestCache')
+    Network:RegisterFunction('MarketHelper:GetProductInfo')
     
     console.LoggingEnabled = VERBOSE_OUTPUT
     
