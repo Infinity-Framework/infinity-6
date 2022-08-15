@@ -25,6 +25,9 @@
             Position: number [default=0]
             -> Returns or specifies the spring's current position.
             
+            ReachedTarget: boolean [readonly] [default=true]
+            -> Returns whether or not Position is equal to Target.
+            
             Speed: number [default=1]
             -> Specifies the current speed that will be applied to the spring's velocity
                when the target is updated.
@@ -101,6 +104,7 @@ export type SawSpring   = {
     MapInverse: (self: {}, min: number, max: number) -> number,
     Position: number,
     Read: (self: {}) -> (boolean, number),
+    ReachedTarget: boolean,
     Skip: (self: {}, delta: number) -> (),
     Speed: number,
     Sprung: boolean,
@@ -209,6 +213,7 @@ function SawSpring:Update()
             self._updateEvent:Fire(position, 1 - position)
         else
             self._updateEvent:Fire(self.Target, 1 - self.Target)
+            self._position0 = self.Target
             self._updateConnection:Disconnect()
             self._updateConnection = nil
             self._completeEvent:Fire(self.Target)
@@ -283,6 +288,11 @@ SawSpring.__properties = {
             self._position0 = value
             self._velocity0 = velocity
             self._time0 = now
+        end
+    },
+    ReachedTarget = {
+        get = function(self)
+            return self.Position == self.Target
         end
     },
     Speed = {
