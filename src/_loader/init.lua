@@ -32,8 +32,13 @@ local MESSAGES          = {
     NOPATH_NOT_FOUND    = 'Failed to deep-fetch require %q - no module with that name found in the specified context.'
 }
 
+
 --= Variables =--
 local moduleCache       = { }
+local moduleStatusCache = { }
+local loadingCache      = { }
+
+--= Enums =--
 
 --= Functions =--
 local function _out(template: string, ...: any)
@@ -113,14 +118,28 @@ local function _promiseRequire(targetModule: ModuleScript): any
     local result
     
     Promise.new(function(resolve: (any) -> ())
-        local data = require(targetModule)
-        
-        if data then
-            resolve(data)
+        if not moduleStatusCache[targetModule] then
+            moduleStatusCache[targetModule] = { Module = targetModule, Required = { } }
+        else
+            if loadingCache[1] then
+                table.insert(moduleStatusCache[targetModule].Required, loadingCache[1])
+            end
         end
+
+        local targetModuleTMD = moduleStatusCache[targetModule]
+
+        table.insert(loadingCache, targetModule)
+        for _, required in (targetModuleTMD.Required) do
+            error(('A Cylic Require has been detected! \nModule 1: [%s]\nModule 2: [%s]\n'):format(targetModule:GetFullName(), required:GetFullName()), 2)
+        end
+
+        resolve(require(targetModuleTMD.Module), targetModuleTMD)
+        table.remove(loadingCache, 1)
+
     end):andThen(function(moduleData: any)
         result = moduleData
-    end):catch(function()
+    end):catch(function(err: string)
+        warn(err)
         _warn(MESSAGES.REQUIRE_ERROR, targetModule.Name)
     end):await()
     
@@ -132,6 +151,7 @@ _out('You are using Infinity Module Loader %s', LOADER_VER)
 --= Main Loader Function =--
 return function (query: string|ModuleScript): any
     if type(query) == 'string' then
+
         if moduleCache[query] ~= nil then
             _out('Returning cached result for query %q', query)
             return moduleCache[query]
@@ -195,6 +215,10 @@ return function (query: string|ModuleScript): any
         
         return result
     else
+        if not moduleStatusCache[query] then 
+            moduleStatusCache[query] = { Required = { } }
+        end
+
         return require(query)
     end
 end
