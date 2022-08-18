@@ -21,7 +21,6 @@ local MemoryData = { UpdateRate = 5 }
 local Logger = require('$Logger') ---@Logger
 local MemoryStoreHelper = require('MemoryStoreHelper') ---@module MemoryStoreHelper
 local DataRateHelper = require('DataRateHelper') ---@module DataRateHelper
-local Replicator = require('Replicator') ---@module Replicator
 
 --= Roblox Services =--
 local memoryService = game:GetService('MemoryStoreService')
@@ -362,15 +361,6 @@ function MemoryData:Update() ---@deprecated
         end):catch(function(err)
             console:Warn('Failed to read master queue: %s', err)
         end):await()
-end
-
-function MemoryData:Run() ---@deprecated
-    local testStore = dataService:GetDataStore('FollowerStore', 'v1')
-    
-    while task.wait(2) do
-        local v = testStore:GetAsync('Followers')
-        Replicator:SendToAll('MEMORY_VALUE', v)
-    end
 end
 
 function MemoryData:Immediate() ---@deprecated
