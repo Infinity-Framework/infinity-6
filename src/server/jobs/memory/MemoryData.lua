@@ -176,7 +176,7 @@ local function _patchRemove(store: DataStore, data: {})
                     local targetIndex = removal.TargetIndex
                     local targetValue = removal.TargetValue
                     
-                    if targetValue then
+                    if targetValue and not targetIndex then
                         for index, value in old do
                             if value == targetValue then
                                 if type(index) == 'number' then
@@ -186,7 +186,7 @@ local function _patchRemove(store: DataStore, data: {})
                                 end
                             end
                         end
-                    elseif targetIndex then
+                    elseif targetIndex and not targetValue then
                         old[targetIndex] = nil
                     elseif targetIndex and targetValue then
                         for index, value in old do
