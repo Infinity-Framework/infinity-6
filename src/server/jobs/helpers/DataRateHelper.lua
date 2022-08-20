@@ -1,5 +1,5 @@
 --[[
-    File: DataRateHelper2.lua
+    File: DataRateHelper.lua
     Author(s): FriendlyBiscuit
     Created: 08/18/2022 @ 15:48:37
     
@@ -19,7 +19,7 @@
 local require = require(game.ReplicatedStorage:WaitForChild('Infinity'))
 
 --= Root =--
-local DataRateHelper2 = { TickRate = 1 }
+local DataRateHelper = { TickRate = 1 }
 
 --= Classes & Jobs =--
 local Promise = require('$Promise') ---@module Promise
@@ -33,7 +33,7 @@ local playerService = game:GetService('Players')
 
 --= Object References =--
 local writeKeyMap = memoryService:GetSortedMap('DataRateHelper_Writes')
-local console = Logger.new('DataRateHelper2')
+local console = Logger.new('DataRateHelper')
 
 --= Constants =--
 local VERBOSE_OUTPUT = true
@@ -60,7 +60,7 @@ end
 ---@param requestType Enum.DataStoreRequestType The request type to check rate limits for.
 ---@param key string The key to check rate limits for.
 ---@meta
-function DataRateHelper2:ResolveWhenReady(datastore: DataStore, requestType: string|Enum.DataStoreRequestType, key: string): Promise
+function DataRateHelper:ResolveWhenReady(datastore: DataStore, requestType: string|Enum.DataStoreRequestType, key: string): Promise
     local queueData = {
         OID = #mainQueue + 1,
         DataStore = datastore,
@@ -87,7 +87,7 @@ end
 ---@param requestType Enum.DataStoreRequestType The request type to check rate limits for.
 ---@param key string The key to check rate limits for.
 ---@meta
-function DataRateHelper2:WaitUntilReady(datastore: DataStore, requestType: string|Enum.DataStoreRequestType, key: string)
+function DataRateHelper:WaitUntilReady(datastore: DataStore, requestType: string|Enum.DataStoreRequestType, key: string)
     local queueData = {
         OID = #mainQueue + 1,
         DataStore = datastore,
@@ -103,8 +103,15 @@ function DataRateHelper2:WaitUntilReady(datastore: DataStore, requestType: strin
 end
 
 --= Job Initializers =--
-function DataRateHelper2:Tick() ---@deprecated
+function DataRateHelper:Tick() ---@deprecated
     tempBlockedKeys = { }
+    
+    for key, lastTick in rateCache do
+        if (tick() - lastTick) > 15 then
+            console:Print('Cleaned up unused rate cache key %s', key)
+            rateCache[key] = nil
+        end
+    end
     
     for index, queueItem in mainQueue do
         local targetStore = queueItem.DataStore
@@ -172,9 +179,9 @@ function DataRateHelper2:Tick() ---@deprecated
     end
 end
 
-function DataRateHelper2:Init() ---@deprecated
+function DataRateHelper:Init() ---@deprecated
     console.LoggingEnabled = VERBOSE_OUTPUT
 end
 
 --= Return Job =--
-return DataRateHelper2
+return DataRateHelper
