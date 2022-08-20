@@ -85,6 +85,7 @@ end
 ---@param productType Enum.InfoType? The InfoType of the product. **[default=Asset]**
 ---@meta
 function MarketHelper:CacheProductInfo(productId: number, productType: Enum.InfoType?, skipCache: boolean?)
+    productType = productType or Enum.InfoType.Asset
     if _isInCacheOrQueue(productId) then return end
     table.insert(cacheQueue, { productId, productType or Enum.InfoType.Asset, 0, skipCache })
 end
@@ -99,6 +100,7 @@ end
 ---@param retryCount number? Optional number of retries. **[default = 5]**
 ---@meta
 function MarketHelper:GetProductInfoAsync(productId: number, productType: Enum.InfoType?, skipCache: boolean?, retryCount: number?): Promise
+    productType = productType or Enum.InfoType.Asset
     if not skipCache then
         local cacheKey = tostring(productId) .. productType.Name
         local cachedData = productCache[cacheKey]
