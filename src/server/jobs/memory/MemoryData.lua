@@ -15,7 +15,7 @@
 local require = require(game.ReplicatedStorage:WaitForChild('Infinity'))
 
 --= Root =--
-local MemoryData = { UpdateRate = 5 }
+local MemoryData = { UpdateRate = 2.5 }
 
 --= Classes & Jobs =--
 local Logger = require('$Logger') ---@Logger
@@ -144,11 +144,11 @@ local function _patchInsertUnique(store: DataStore, data: {})
                 end
                 
                 for _, overwrite in data.Overwrites do
-                    local targetKey = overwrite.TargetKey
+                    local targetIndex = overwrite.TargetIndex
                     local targetValue = overwrite.TargetValue
                     
-                    if targetKey then
-                        old[targetKey] = targetValue
+                    if targetIndex then
+                        old[targetIndex] = targetValue
                     else
                         if not table.find(old, targetValue) then
                             table.insert(old, targetValue)
@@ -217,7 +217,7 @@ function MemoryData:PushSlavedWrite(refKey: string, changes: {})
     
     if valid then
         MemoryStoreHelper:SetMapAsync(mainMap, finalKey, changes):await()
-        MemoryStoreHelper:AddQueueAsync(mainQueue, finalKey, nil, 3600):await()
+        MemoryStoreHelper:AddQueueAsync(mainQueue, finalKey, nil):await()
     else
         console:Warn('Failed to queue slaved write for %q - %s.', refKey, message)
     end
@@ -317,7 +317,7 @@ function MemoryData:Update() ---@deprecated
                             elseif targetOp == MemoryData.Operation.PatchInsertUnique then
                                 if not consolidatedKey.Overwrites then consolidatedKey.Overwrites = { } end
                                 table.insert(consolidatedKey.Overwrites, {
-                                    TargetKey = keyData.TargetKey,
+                                    TargetIndex = keyData.TargetIndex,
                                     TargetValue = keyData.TargetValue
                                 })
                             else
