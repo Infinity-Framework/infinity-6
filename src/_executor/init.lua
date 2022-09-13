@@ -8,29 +8,32 @@
 --]]
 
 --= Infinity Module Loader =--
-local require           = shared
+local require = shared
 
 --= Root =--
-local InfinityExecutor  = { }
+local InfinityExecutor = { }
 
 --= Dependencies =--
-local Promise           = require('$Promise')
-local flags             = require(script:WaitForChild('Flags'))
+local Promise = require('$Promise')
+local flags = require(script:WaitForChild('Flags'))
 
 --= Roblox Services =--
-local runService        = game:GetService('RunService')
+local runService = game:GetService('RunService')
 
 --= Object References =--
-local defaultMembers    = script:WaitForChild('DefaultCallbacks')
+local defaultMembers = script:WaitForChild('DefaultCallbacks')
 
 --= Constants =--
-local VERBOSE_OUTPUT    = flags.EXEC_VERBOSE_OUTPUT
-local EXECUTOR_VER      = '6.0.0'
-local PROMISE_TYPE      = { NONE = 'None', YIELD = 'Yield', ASYNC = 'Async' }
-local ERROR_TEMPLATE    = ('$REP\n  [InfinityExecutor:%s] %s\n  $REP'):gsub('%$REP', string.rep('-', 40))
-local MESSAGES          = {
-    NOT_FAST_ENOUGH     = '%s\'s ::Immediate() callback ran too slow. This function should run instantly; check for yields.';
-    JOB_ERROR           = '%s\'s ::%s() callback errored during execution. Promise trace:\n$REP\n%s';
+local VERBOSE_OUTPUT = flags.EXEC_VERBOSE_OUTPUT
+local EXECUTOR_VER = '6.0.1'
+local PROMISE_TYPE = { NONE = 'None', YIELD = 'Yield', ASYNC = 'Async' }
+local BEGIN_ERR_STR = '-------- BEGIN ERROR --------'
+local END_ERR_STR = '--------- END ERROR ---------'
+local ERROR_TEMPLATE = ('%s\n\n  [InfinityExecutor:%%s] %%s\n  %s'):format(BEGIN_ERR_STR, END_ERR_STR)
+local STRIPPED_TOPICS = { 'Infinity.Promise', 'InfinityExecutor' }
+local MESSAGES = {
+    NOT_FAST_ENOUGH = '%s\'s ::Immediate() callback ran too slow.\n  This function should run instantly; check for yields.\n';
+    JOB_ERROR = '%s\'s ::%s() callback errored during execution. Stack Trace:\n%s';
 }
 
 --= Variables =--
@@ -45,6 +48,27 @@ local function _getContextString(): string
     end
     
     return 'null'
+end
+
+local function _stripTopics(query: string): string
+    local split = string.split(query, '\n')
+    local result = ''
+    
+    for index, line in split do
+        for _, topic in STRIPPED_TOPICS do
+            if not line or line:find(topic) then
+                split[index] = nil
+            end
+        end
+    end
+    
+    for _, str in split do
+        if str and str ~= '' then
+            result ..= '  ' .. str .. '\n'
+        end
+    end
+    
+    return result
 end
 
 local function _out(template: string, ...: any)
@@ -158,11 +182,11 @@ local function _loadJobsFolder(target: Folder, allowedMembers: {string}?)
                     
                     if member.PromiseType == PROMISE_TYPE.ASYNC then
                         handlePromise():catch(function(promiseError: {})
-                            _warn(MESSAGES.JOB_ERROR, promiseError.trace, job.__jobname, member.Alias)
+                            _warn(MESSAGES.JOB_ERROR, job.__jobname, member.Alias, _stripTopics(promiseError.trace))
                         end)
                     else
                         handlePromise():catch(function(promiseError: {})
-                            _warn(MESSAGES.JOB_ERROR, promiseError.trace, job.__jobname, member.Alias)
+                            _warn(MESSAGES.JOB_ERROR, job.__jobname, member.Alias, _stripTopics(promiseError.trace))
                         end):await()
                     end
                 else
