@@ -36,8 +36,8 @@ local writeKeyMap = memoryService:GetSortedMap('DataRateHelper_Writes')
 local console = Logger.new('DataRateHelper')
 
 --= Constants =--
-local VERBOSE_OUTPUT = true
-local SAME_KEY_DELAY = 6
+local VERBOSE_OUTPUT = false
+local SAME_KEY_DELAY = 6.2
 local CACHE_KEY_FORMAT = '%s.%s.%s'
 local WRITE_TYPES = { 'SetIncrementedSortedAsync', 'UpdateAsync', 'SetIncrementAsync' }
 local READ_TYPES = { 'GetAsync', 'GetSortedAsync' }
