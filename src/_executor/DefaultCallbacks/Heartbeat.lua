@@ -7,15 +7,15 @@
         Infinity 6 built-in Heartbeat event connector.
 --]]
 
-local run_svc = game:GetService('RunService')
+local runService = game:GetService('RunService')
 
 return {
     Aliases = { 'Heartbeat', 'OnHeartbeat' },
     ExecutionOrder = 8,
     PromiseType = 'None',
-    Handle = function(job_module: {}, callback: (self: {}) -> ())
-        run_svc.Heartbeat:Connect(function(...)
-            callback(job_module, ...)
+    Handle = function(jobModule: {}, callback: (self: {}) -> ())
+        runService.Heartbeat:Connect(function(...)
+            callback(jobModule, ...)
         end)
     end
 }

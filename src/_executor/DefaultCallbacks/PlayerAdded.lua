@@ -7,20 +7,20 @@
         Infinity 6 built-in PlayerAdded event connector.
 --]]
 
-local player_svc = game:GetService('Players')
-local run_svc    = game:GetService('RunService')
+local playerService = game:GetService('Players')
+local runService = game:GetService('RunService')
 
 return {
     Aliases = { 'PlayerAdded', 'PlayerJoined', 'PlayerJoin' },
     ExecutionOrder = 5,
-    Handle = function(job_module: {}, callback: (self: {}, client: Player) -> ())
-        player_svc.PlayerAdded:Connect(function(client: Player)
-            callback(job_module, client)
+    Handle = function(jobModule: {}, callback: (self: {}, client: Player) -> ())
+        playerService.PlayerAdded:Connect(function(client: Player)
+            callback(jobModule, client)
         end)
         
-        if run_svc:IsStudio() then
-            for _, player in pairs(player_svc:GetPlayers()) do
-                callback(job_module, player)
+        if runService:IsStudio() then
+            for _, player in pairs(playerService:GetPlayers()) do
+                callback(jobModule, player)
             end
         end
     end

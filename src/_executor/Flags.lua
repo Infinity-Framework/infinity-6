@@ -1,9 +1,9 @@
-local run_svc = game:GetService('RunService')
+local runService = game:GetService('RunService')
 
 return {
-    IS_STUDIO = run_svc:IsStudio();
+    IS_STUDIO = runService:IsStudio();
     DEVELOPER_MODE = false;
     
     -- InfinityExecutor Flags
-    EXEC_VERBOSE_OUTPUT = true;
+    EXEC_VERBOSE_OUTPUT = false;
 }

@@ -7,14 +7,14 @@
         Infinity 6 built-in PlayerRemoving event connector.
 --]]
 
-local player_svc = game:GetService('Players')
+local playerService = game:GetService('Players')
 
 return {
-    Aliases = { 'PlayerRemoved', 'PlayerLeft', 'PlayerLeave' },
+    Aliases = { 'PlayerRemoved', 'PlayerRemoving', 'PlayerLeft', 'PlayerLeave' },
     ExecutionOrder = 6,
-    Handle = function(job_module: {}, callback: (self: {}, client: Player) -> ())
-        player_svc.PlayerRemoving:Connect(function(client: Player)
-            callback(job_module, client)
+    Handle = function(jobModule: {}, callback: (self: {}, client: Player) -> ())
+        playerService.PlayerRemoving:Connect(function(client: Player)
+            callback(jobModule, client)
         end)
     end
 }

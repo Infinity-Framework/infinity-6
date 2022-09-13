@@ -11,7 +11,7 @@ return {
     Aliases = { 'Run', 'Start', 'InitAsync' },
     ExecutionOrder = 1,
     PromiseType = 'Async',
-    Handle = function(job_module: {}, callback: (self: {}) -> ())
-        callback(job_module)
+    Handle = function(jobModule: {}, callback: (self: {}) -> ())
+        callback(jobModule)
     end
 }

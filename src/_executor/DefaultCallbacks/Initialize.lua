@@ -11,7 +11,7 @@ return {
     Aliases = { 'Init', 'Initialize' },
     ExecutionOrder = 0,
     PromiseType = 'Yield',
-    Handle = function(job_module: {}, callback: (self: {}) -> ())
-        callback(job_module)
+    Handle = function(jobModule: {}, callback: (self: {}) -> ())
+        callback(jobModule)
     end
 }

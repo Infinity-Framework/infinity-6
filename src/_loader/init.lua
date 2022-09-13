@@ -8,32 +8,32 @@
 --]]
 
 --= Dependencies =--
-local Promise           = require(script:WaitForChild('Promise'))
+local Promise = require(script:WaitForChild('Promise'))
 
 --= Roblox Services =--
-local runService        = game:GetService('RunService')
-local starterService    = game:GetService('StarterPlayer')
-local playerService     = game:GetService('Players')
-local serverService     = game:GetService('ServerScriptService')
+local runService = game:GetService('RunService')
+local starterService = game:GetService('StarterPlayer')
+local playerService = game:GetService('Players')
+local serverService = game:GetService('ServerScriptService')
 
 --= Constants =--
-local VERBOSE_OUTPUT    = false
-local FETCH_TIMEOUT     = 0.25
-local LOADER_VER        = '6.0.0'
-local ERROR_TEMPLATE    = ('$REP\n  [InfinityLoader] %s\n  $REP'):gsub('%$REP', string.rep('-', 40))
-local PREFIX_PATHS      = {
+local VERBOSE_OUTPUT = false
+local FETCH_TIMEOUT = 0.25
+local LOADER_VER = '6.0.0'
+local ERROR_TEMPLATE = ('$REP\n  [InfinityLoader] %s\n  $REP'):gsub('%$REP', string.rep('-', 40))
+local PREFIX_PATHS = {
     ['%$'] = game.ReplicatedStorage:WaitForChild('InfinityShared')
 }
-local MESSAGES          = {
-    REQUIRE_ERROR       = 'Failed to require %q - the target module errored. See above for error details.',
+local MESSAGES = {
+    REQUIRE_ERROR = 'Failed to require %q - the target module errored. See above for error details.',
     PATH_NODE_NOT_FOUND = 'Failed to require path %q - node %q not found.',
-    PATH_NOT_A_MODULE   = 'Failed to require path %q - final node %q is not a ModuleScript.',
+    PATH_NOT_A_MODULE = 'Failed to require path %q - final node %q is not a ModuleScript.',
     NOPATH_NOT_A_MODULE = 'Failed to deep-fetch require %q - %q is not a ModuleScript.',
-    NOPATH_NOT_FOUND    = 'Failed to deep-fetch require %q - no module with that name found in the specified context.'
+    NOPATH_NOT_FOUND = 'Failed to deep-fetch require %q - no module with that name found in the specified context.'
 }
 
 --= Variables =--
-local moduleCache       = { }
+local moduleCache = { }
 
 --= Functions =--
 local function _out(template: string, ...: any)
