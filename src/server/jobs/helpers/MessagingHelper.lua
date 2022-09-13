@@ -38,7 +38,6 @@ local lastCall = 0
 local function _publishAsyncPromise(topic: string, message: any): Promise
     return Promise.new(function(resolve: () -> ())
         messagingService:PublishAsync(topic, message)
-        print(os.time(), DateTime.now(), tick())
         resolve()
     end)
 end
