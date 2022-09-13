@@ -17,8 +17,8 @@ local require = require(game.ReplicatedStorage:WaitForChild('Infinity'))
 local MemoryStoreHelper = { }
 
 --= Classes & Jobs =--
-local Promise = require('$Promise') ---@Promise
-local Logger = require('$Logger') ---@Logger
+local Promise = require('$Promise') ---@module Promise
+local Logger = require('$Logger') ---@module Logger
 
 --= Object References =--
 local console = Logger.new('MemoryStoreHelper')
@@ -58,9 +58,9 @@ local function _setMapAsyncPromise(map: MemoryStoreSortedMap, key: string, value
     end)
 end
 
-local function _updateMapAsyncPromise(map: MemoryStoreSortedMap, key: string, callback: (any) -> any): Promise
+local function _updateMapAsyncPromise(map: MemoryStoreSortedMap, key: string, callback: (any) -> any, expiration: number): Promise
     return Promise.new(function(resolve: (any) -> ())
-        local latest = map:UpdateAsync(key, callback, DEFAULT_EXPIRE_TIME)
+        local latest = map:UpdateAsync(key, callback, expiration)
         resolve(latest)
     end)
 end
@@ -97,9 +97,11 @@ end
 ---@param map MemoryStoreSortedMap The MemoryStoreSortedMap you're querying.
 ---@param key string The key to update.
 ---@param callback function The transformation function to run on the old data. Must return new data.
+---@param expiration number number? Optional expiration time in seconds. ***[default=3888000]*
 ---@meta
-function MemoryStoreHelper:UpdateMapAsync(map: MemoryStoreSortedMap, key: string, callback: (any) -> any): Promise
-    return Promise.retryWithDelay(_updateMapAsyncPromise, RETRY_COUNT, RETRY_DELAY, map, key, callback)
+function MemoryStoreHelper:UpdateMapAsync(map: MemoryStoreSortedMap, key: string, callback: (any) -> any, expiration: number?): Promise
+    expiration = expiration or DEFAULT_EXPIRE_TIME
+    return Promise.retryWithDelay(_updateMapAsyncPromise, RETRY_COUNT, RETRY_DELAY, map, key, callback, expiration)
 end
 
 ---Returns a Promise that will resolve when the specified key is removed.
