@@ -27,9 +27,7 @@ local defaultMembers = script:WaitForChild('DefaultCallbacks')
 local VERBOSE_OUTPUT = flags.EXEC_VERBOSE_OUTPUT
 local EXECUTOR_VER = '6.0.1'
 local PROMISE_TYPE = { NONE = 'None', YIELD = 'Yield', ASYNC = 'Async' }
-local BEGIN_ERR_STR = '-------- BEGIN ERROR --------'
-local END_ERR_STR = '--------- END ERROR ---------'
-local ERROR_TEMPLATE = ('%s\n\n  [InfinityExecutor:%%s] %%s\n  %s'):format(BEGIN_ERR_STR, END_ERR_STR)
+local ERROR_TEMPLATE = ('[InfinityExecutor:%%s] %%s\n')
 local STRIPPED_TOPICS = { 'Infinity.Promise', 'InfinityExecutor' }
 local MESSAGES = {
     NOT_FAST_ENOUGH = '%s\'s ::Immediate() callback ran too slow.\n  This function should run instantly; check for yields.\n';
