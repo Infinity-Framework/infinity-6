@@ -26,6 +26,12 @@
             
             <boolean> LoggingEnabled (default: true)
                 -> Enables/disables all logging capabilities for the current Logger.
+            
+            <number> LoggingLevel (default: 3)
+                -> Sets the maximum level of logged events.
+                   1 = Errors only
+                   2 = Errors and warnings only
+                   3 = Everything
         
         Functions:
             <void> ::Print(message: string[, ...])
@@ -64,11 +70,14 @@
 --]]
 
 --= Module Loader =--
-local require           = require(game.ReplicatedStorage:WaitForChild('Infinity'))
+local require = require(game.ReplicatedStorage:WaitForChild('Infinity'))
+
+--= Roblox Services =--
+local http_svc = game:GetService('HttpService')
 
 --= Class Root =--
-local Logger            = { }
-Logger.__classname      = 'Logger'
+local Logger = { }
+Logger.__classname = 'Logger'
 
 --= Type Export =--
 export type Logger      = {
@@ -76,6 +85,7 @@ export type Logger      = {
     Name: string,
     ListenersEnabled: boolean,
     LoggingEnabled: boolean,
+    LoggingLevel: number,
     Print: (message: string, ...any) -> (),
     Warn: (message: string, ...any) -> (),
     Error: (message: string, ...any) -> (),
@@ -84,11 +94,19 @@ export type Logger      = {
 }
 
 --= Modules & Config =--
-local classify          = require('$Classify')
+local classify = require('$Classify')
 
 --= Class API =--
-function Logger:Print(message: string, ...): nil
-    if not self.LoggingEnabled then return end
+function Logger:toJSON(table: {})
+    if type(table) ~= 'table' then
+        return table
+    end
+
+    return http_svc:JSONEncode(table)
+end
+
+function Logger:Print(message: string, ...)
+    if not self.LoggingEnabled or self.LoggingLevel < 3 then return end
     
     local final_str
     
@@ -98,13 +116,15 @@ function Logger:Print(message: string, ...): nil
         final_str = message
     end
     
-    final_str = final_str:format(...)
+    if #{...} > 0 then
+        final_str = final_str:format(...)
+    end
     
     print(final_str)
 end
 
-function Logger:Warn(message: string, ...): nil
-    if not self.LoggingEnabled then return end
+function Logger:Warn(message: string, ...)
+    if not self.LoggingEnabled or self.LoggingLevel < 2 then return end
     
     local final_str
     
@@ -114,13 +134,15 @@ function Logger:Warn(message: string, ...): nil
         final_str = message
     end
     
-    final_str = final_str:format(...)
+    if #{...} > 0 then
+        final_str = final_str:format(...)
+    end
     
     warn(final_str)
 end
 
-function Logger:Error(message: string, ...): nil
-    if not self.LoggingEnabled then return end
+function Logger:Error(message: string, ...)
+    if not self.LoggingEnabled or self.LoggingLevel < 1 then return end
     
     local final_str
     
@@ -130,16 +152,18 @@ function Logger:Error(message: string, ...): nil
         final_str = message
     end
     
-    final_str = final_str:format(...)
+    if #{...} > 0 then
+        final_str = final_str:format(...)
+    end
     
     error(final_str, 2)
 end
 
-function Logger:PauseListeners(): nil
+function Logger:PauseListeners()
     self._listen = false
 end
 
-function Logger:ResumeListeners(): nil
+function Logger:ResumeListeners()
     self._listen = true
 end
 
@@ -176,31 +200,24 @@ Logger.listenToProperty = Logger.ListenToProperty
 Logger.listenToAttribute = Logger.ListenToAttribute
 
 --= Class Constructor =--
-function Logger.new(name: string): any
+function Logger.new(name: string): Logger
     local self = classify(Logger)
     
     self._name = name and name or ''
     self._timestamps = false
     self._listen = true
     self._enabled = true
+    self._logLevel = 3
     
     return self
 end
 
 --= Class Properties =--
 Logger.__properties = {
-    LoggingEnabled = {
-        bind = '_enabled',
-        target = function(self) return self end
-    },
-    ListenersEnabled = {
-        bind = '_listen',
-        target = function(self) return self end
-    },
-    Name = {
-        bind = '_name',
-        target = function(self) return self end
-    }
+    LoggingEnabled = { internal = '_enabled' },
+    LoggingLevel = { internal = '_logLevel' },
+    ListenersEnabled = { internal = '_listen' },
+    Name = { internal = '_name' }
 }
 
 --= Return Class =--
