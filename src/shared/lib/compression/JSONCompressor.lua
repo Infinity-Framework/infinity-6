@@ -2,7 +2,6 @@ local JSONCompressor = { }
 local require = require(game.ReplicatedStorage:WaitForChild('Infinity'))
 local LibDeflate = require('$LibDeflate')
 local httpService = game:GetService('HttpService')
-local mainDict = LibDeflate:CreateDictionary('1234567890', 10, 187433486)
 
 ---Converts a table to JSON and compresses it with LibDeflate.
 ---
@@ -30,12 +29,12 @@ end
 ---@param deflatedContent string The deflated JSON string.
 ---@meta
 function JSONCompressor:Inflate(deflatedContent: string): string|nil
-    local json = LibDeflate:DecompressDeflate(deflatedContent)
+    local decoded = LibDeflate:DecodeForPrint(deflatedContent)
     local result
     
-    if json then
-        result = LibDeflate:DecodeFromPrint(json)
-        result = httpService:JSONDecode(json)
+    if decoded then
+        result = LibDeflate:DecompressDeflate(decoded)
+        result = httpService:JSONDecode(result)
     end
     
     return result
