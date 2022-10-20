@@ -18,7 +18,7 @@ local serverService = game:GetService('ServerScriptService')
 
 --= Constants =--
 local VERBOSE_OUTPUT = false
-local FETCH_TIMEOUT = 0.25
+local FETCH_TIMEOUT = 5
 local LOADER_VER = '6.0.0'
 local ERROR_TEMPLATE = ('$REP\n  [InfinityLoader] %s\n  $REP'):gsub('%$REP', string.rep('-', 40))
 local PREFIX_PATHS = {
@@ -121,7 +121,7 @@ local function _promiseRequire(targetModule: ModuleScript): any
     end):andThen(function(moduleData: any)
         result = moduleData
     end):catch(function()
-        _warn(MESSAGES.REQUIRE_ERROR, targetModule.Name)
+        _warn(MESSAGES.REQUIRE_ERROR, targetModule:GetFullName())
     end):await()
     
     return result
